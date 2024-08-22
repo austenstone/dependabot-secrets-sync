@@ -14,7 +14,7 @@ interface Input {
 const getInputs = (): Input => {
   const result = {} as Input;
   result.token = getInput("github-token");
-  result.secretsInclude = JSON.parse(getInput("secrets") || '[]');
+  result.secretsInclude = JSON.parse(getInput("secrets-include") || '[]');
   result.secretsExclude = JSON.parse(getInput("secrets-exclude") || '[]');
   result.owner = getInput("owner");
   result.repo = getInput("repo");

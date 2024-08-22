@@ -1,9 +1,9 @@
-name: TypeScript Action
+name: Dependabot Secrets Sync
 author: Austen Stone
-description: A TypeScript Action
+description: Sync actions secrets to dependabot secrets
 branding:
-  icon: "plus"
-  color: "blue"
+  icon: "key"
+  color: "red"
 
 inputs:
   github-token:
@@ -18,6 +18,14 @@ inputs:
     description: 'Optional repository name to run the workflow on.'
     default: ${{ github.repository }}
     required: false
+  secrets-include:
+    description: 'Optional list of secrets to include in the action payload.'
+    required: false
+    default: '[]'
+  secrets-excluded:
+    description: 'Optional list of secrets to exclude from the action payload.'
+    required: false
+    default: '["GITHUB_TOKEN"]'
 
 runs:
   using: "node20"

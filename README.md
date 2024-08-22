@@ -1,41 +1,54 @@
-# Action
+# Dependabot Secrets Sync
 
-This repository serves as a [template](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template) for TypeScript [Actions](https://docs.github.com/en/actions).
+Sync secrets from GitHub Actions to Dependabot.
 
 ## Usage
-Create a workflow (eg: `.github/workflows/seat-count.yml`). See [Creating a Workflow file](https://help.github.com/en/articles/configuring-a-workflow#creating-a-workflow-file).
+Create a workflow (eg: `.github/workflows/dependabot-secrets-sync`). See [Creating a Workflow file](https://help.github.com/en/articles/configuring-a-workflow#creating-a-workflow-file).
 
-<!-- 
+
 ### PAT(Personal Access Token)
 
-You will need to [create a PAT(Personal Access Token)](https://github.com/settings/tokens/new?scopes=admin:org) that has `admin:org` access.
+You will need to [create a PAT(Personal Access Token)](https://github.com/settings/tokens/new?description=dependabot-secrets-sync&scopes=repo%2Cadmin%3Aorg) that has `repo` access.
 
-Add this PAT as a secret so we can use it as input `github-token`, see [Creating encrypted secrets for a repository](https://docs.github.com/en/enterprise-cloud@latest/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository). 
+Add this PAT as a secret so we can use it as input `github-token`, see [Creating encrypted secrets for a repository](https://docs.github.com/en/enterprise-cloud@latest/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository).
+
 ### Organizations
 
 If your organization has SAML enabled you must authorize the PAT, see [Authorizing a personal access token for use with SAML single sign-on](https://docs.github.com/en/enterprise-cloud@latest/authentication/authenticating-with-saml-single-sign-on/authorizing-a-personal-access-token-for-use-with-saml-single-sign-on).
--->
+
 
 #### Example
 ```yml
-name: TypeScript Action Workflow
+name: Usage
 on:
-  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *" # every day at midnight
 
 jobs:
   run:
-    name: Run Action
     runs-on: ubuntu-latest
     steps:
-      - uses: austenstone/action-typescript@main
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          github-token: ${{ secrets.TOKEN }}
+        env:
+          SECRETS: ${{ toJson(secrets) }} # IMPORTANT: pass all secrets to the action
 ```
+
+> [!IMPORTANT]  
+> You must pass all secrets to the action via the `SECRETS` environment variable!
 
 ## ➡️ Inputs
 Various inputs are defined in [`action.yml`](action.yml):
 
 | Name | Description | Default |
 | --- | - | - |
-| github&#x2011;token | Token to use to authorize. | ${{&nbsp;github.token&nbsp;}} |
+| github-token | The GitHub token used to create an authenticated client | ${{ github.token }} |
+| owner | Optional repository owner to run the workflow on. | ${{ github.repository_owner }} |
+| repo | Optional repository name to run the workflow on. | ${{ github.repository }} |
+| secrets-include | Optional list of secrets to include in the action payload. | [] |
+| secrets-excluded | Optional list of secrets to exclude from the action payload. | ["GITHUB_TOKEN"] |
 
 <!-- 
 ## ⬅️ Outputs
