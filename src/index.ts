@@ -5,7 +5,8 @@ import _sodium from 'libsodium-wrappers';
 
 interface Input {
   token: string;
-  secrets: string | undefined;
+  secretsInclude: string[];
+  secretsExclude: string[];
   owner: string;
   repo: string;
 }
@@ -13,7 +14,8 @@ interface Input {
 const getInputs = (): Input => {
   const result = {} as Input;
   result.token = getInput("github-token");
-  result.secrets = process.env.SECRETS;
+  result.secretsInclude = JSON.parse(getInput("secrets")) || [];
+  result.secretsExclude = JSON.parse(getInput("secrets-exclude")) || [];
   result.owner = getInput("owner");
   result.repo = getInput("repo");
   if (result.repo.includes('/')) {
@@ -25,8 +27,23 @@ const getInputs = (): Input => {
 export const run = async (): Promise<void> => {
   const input = getInputs();
   const octokit = getOctokit(input.token);
+  const _envSecrets = JSON.parse(process.env.SECRETS || '{}');
+  const secrets: {
+    [key: string]: string;
+  } = {};
+  
+  if (input.secretsInclude.length === 0) {
+    Object.assign(secrets, _envSecrets);
+  } else {
+    input.secretsInclude.forEach((key: string) => {
+      if (secrets[key] === undefined) {
+        secrets[key] = _envSecrets[key];
+      }
+    });
+  }
+  input.secretsExclude.forEach((key: string) => delete secrets[key]);
 
-  info(`All secrets: ${input.secrets}`);
+  info(`All secrets: ${secrets}`);
 
   const {
     key,
@@ -46,12 +63,14 @@ export const run = async (): Promise<void> => {
     return output;
   }
 
-  octokit.rest.dependabot.createOrUpdateRepoSecret({
-    owner: input.owner,
-    repo: input.repo,
-    secret_name: "SECRETS",
-    encrypted_value: encryptSecret('123'),
-    key_id,
+  Object.entries(secrets).forEach(async ([key, value]) => {
+    await octokit.rest.dependabot.createOrUpdateRepoSecret({
+      owner: input.owner,
+      repo: input.repo,
+      secret_name: key,
+      encrypted_value: encryptSecret(value),
+      key_id,
+    });
   });
 };
 

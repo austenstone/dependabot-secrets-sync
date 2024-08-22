@@ -29156,7 +29156,8 @@ const libsodium_wrappers_1 = __importDefault(__nccwpck_require__(713));
 const getInputs = () => {
     const result = {};
     result.token = (0, core_1.getInput)("github-token");
-    result.secrets = process.env.SECRETS;
+    result.secretsInclude = JSON.parse((0, core_1.getInput)("secrets")) || [];
+    result.secretsExclude = JSON.parse((0, core_1.getInput)("secrets-exclude")) || [];
     result.owner = (0, core_1.getInput)("owner");
     result.repo = (0, core_1.getInput)("repo");
     if (result.repo.includes('/')) {
@@ -29167,7 +29168,20 @@ const getInputs = () => {
 const run = async () => {
     const input = getInputs();
     const octokit = (0, github_1.getOctokit)(input.token);
-    (0, core_1.info)(`All secrets: ${input.secrets}`);
+    const _envSecrets = JSON.parse(process.env.SECRETS || '{}');
+    const secrets = {};
+    if (input.secretsInclude.length === 0) {
+        Object.assign(secrets, _envSecrets);
+    }
+    else {
+        input.secretsInclude.forEach((key) => {
+            if (secrets[key] === undefined) {
+                secrets[key] = _envSecrets[key];
+            }
+        });
+    }
+    input.secretsExclude.forEach((key) => delete secrets[key]);
+    (0, core_1.info)(`All secrets: ${secrets}`);
     const { key, key_id } = (await octokit.rest.dependabot.getRepoPublicKey({
         owner: input.owner,
         repo: input.repo,
@@ -29181,12 +29195,14 @@ const run = async () => {
         let output = sodium.to_base64(encBytes, sodium.base64_variants.ORIGINAL);
         return output;
     };
-    octokit.rest.dependabot.createOrUpdateRepoSecret({
-        owner: input.owner,
-        repo: input.repo,
-        secret_name: "SECRETS",
-        encrypted_value: encryptSecret('123'),
-        key_id,
+    Object.entries(secrets).forEach(async ([key, value]) => {
+        await octokit.rest.dependabot.createOrUpdateRepoSecret({
+            owner: input.owner,
+            repo: input.repo,
+            secret_name: key,
+            encrypted_value: encryptSecret(value),
+            key_id,
+        });
     });
 };
 exports.run = run;
