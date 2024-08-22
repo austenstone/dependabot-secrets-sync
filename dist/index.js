@@ -29159,6 +29159,8 @@ const getInputs = () => {
     result.secretsInclude = JSON.parse((0, core_1.getInput)("secrets-include") || '[]');
     result.secretsExclude = JSON.parse((0, core_1.getInput)("secrets-exclude") || '[]');
     result.organization = (0, core_1.getInput)("organization");
+    result.visibility = ((0, core_1.getInput)("visibility") || 'all');
+    result.visibilityRepos = JSON.parse((0, core_1.getInput)("visibility-repos") || '[]');
     result.owner = (0, core_1.getInput)("owner");
     result.repo = (0, core_1.getInput)("repo");
     if (result.repo.includes('/')) {
@@ -29204,6 +29206,13 @@ const run = async () => {
         let output = sodium.to_base64(encBytes, sodium.base64_variants.ORIGINAL);
         return output;
     };
+    const ids = await Promise.all(input.visibilityRepos.map(async (repo) => {
+        const { data } = await octokit.rest.repos.get({
+            owner: input.organization,
+            repo: repo,
+        });
+        return data.id;
+    }));
     Object.entries(secrets).forEach(async ([key, value]) => {
         const payload = {
             secret_name: key,
@@ -29213,7 +29222,8 @@ const run = async () => {
         await (input.organization ? octokit.rest.dependabot.createOrUpdateOrgSecret({
             org: input.organization,
             ...payload,
-            visibility: 'all'
+            visibility: input.visibility,
+            selected_repository_ids: ids,
         }) : octokit.rest.dependabot.createOrUpdateRepoSecret({
             owner: input.owner,
             repo: input.repo,

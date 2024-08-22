@@ -10,6 +10,8 @@ interface Input {
   organization: string;
   owner: string;
   repo: string;
+  visibility: 'all' | 'private' | 'selected';
+  visibilityRepos: string[];
 }
 
 const getInputs = (): Input => {
@@ -18,6 +20,8 @@ const getInputs = (): Input => {
   result.secretsInclude = JSON.parse(getInput("secrets-include") || '[]');
   result.secretsExclude = JSON.parse(getInput("secrets-exclude") || '[]');
   result.organization = getInput("organization");
+  result.visibility = (getInput("visibility") || 'all') as 'all' | 'private' | 'selected';
+  result.visibilityRepos = JSON.parse(getInput("visibility-repos") || '[]');
   result.owner = getInput("owner");
   result.repo = getInput("repo");
   if (result.repo.includes('/')) {
@@ -73,6 +77,14 @@ export const run = async (): Promise<void> => {
     return output;
   }
 
+  const ids = await Promise.all(input.visibilityRepos.map(async (repo: string) => { 
+    const { data } = await octokit.rest.repos.get({
+      owner: input.organization,
+      repo: repo,
+    });
+    return data.id;
+  }));
+
   Object.entries(secrets).forEach(async ([key, value]) => {
     const payload = {
       secret_name: key,
@@ -82,7 +94,8 @@ export const run = async (): Promise<void> => {
     await (input.organization ? octokit.rest.dependabot.createOrUpdateOrgSecret({
       org: input.organization,
       ...payload,
-      visibility: 'all'
+      visibility: input.visibility,
+      selected_repository_ids: ids,
     }) : octokit.rest.dependabot.createOrUpdateRepoSecret({
       owner: input.owner,
       repo: input.repo,

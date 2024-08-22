@@ -13,5 +13,12 @@ jobs:
         with:
           organization: octoaustenstone
           github-token: ${{ secrets.TOKEN }}
+          visibility: selected
+          visibility-repos: |
+            actions-angular
+            vulnerable-node
+          secrets-exclude: |
+            GITHUB_TOKEN
+            SUPER_SECRET
         env:
           SECRETS: ${{ toJson(secrets) }}

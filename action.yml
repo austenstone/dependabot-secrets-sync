@@ -29,6 +29,14 @@ inputs:
     description: 'Optional list of secrets to exclude from the action payload.'
     required: false
     default: '["GITHUB_TOKEN"]'
+  visibility:
+    description: 'When using organization secrets. all, private, or selected'
+    default: 'private'
+    required: false
+  visibility-repos:
+    description: 'When using organization secrets. List of repositories to share the secret with.'
+    default: '[]'
+    required: false
 
 runs:
   using: "node20"

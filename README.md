@@ -72,6 +72,22 @@ jobs:
           SECRETS: ${{ toJson(secrets) }} # IMPORTANT: pass all secrets to the action
 ```
 
+#### Example Organization select repos
+```yml
+      - uses: austenstone/dependabot-secrets-sync@main
+        with:
+          github-token: ${{ secrets.TOKEN }}
+          organization: my-org
+          visibility: selected
+          visibility-repos: |
+            my-repo
+            my-other-repo
+          secrets-exclude: |
+            GITHUB_TOKEN
+            SUPER_SECRET
+        env:
+          SECRETS: ${{ toJson(secrets) }} # IMPORTANT: pass all secrets to the action
+```
 > [!IMPORTANT]  
 > You must pass all secrets to the action via the `SECRETS` environment variable!
 
