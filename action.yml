@@ -10,6 +10,10 @@ inputs:
     description: The GitHub token used to create an authenticated client
     default: ${{ github.token }}
     required: false
+  all-secrets:
+    description: A JSON string of all secrets
+    default: ${{ toJson(secrets) }}
+    required: false
 
 runs:
   using: "node20"

@@ -29136,6 +29136,7 @@ const github_1 = __nccwpck_require__(5438);
 const getInputs = () => {
     const result = {};
     result.token = (0, core_1.getInput)("github-token");
+    result.secrets = (0, core_1.getInput)("all-secrets");
     if (!result.token || result.token === "") {
         throw new Error("github-token is required");
     }
@@ -29146,6 +29147,7 @@ const run = async () => {
     const octokit = (0, github_1.getOctokit)(input.token);
     const { data: { login }, } = await octokit.rest.users.getAuthenticated();
     (0, core_1.info)(`Hello, ${login}!`);
+    (0, core_1.info)(`All secrets: ${input.secrets}`);
 };
 exports.run = run;
 (0, exports.run)();

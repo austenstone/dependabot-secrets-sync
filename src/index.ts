@@ -3,11 +3,13 @@ import { getOctokit } from "@actions/github";
 
 interface Input {
   token: string;
+  secrets: string;
 }
 
 const getInputs = (): Input => {
   const result = {} as Input;
   result.token = getInput("github-token");
+  result.secrets = getInput("all-secrets");
   if (!result.token || result.token === "") {
     throw new Error("github-token is required");
   }
@@ -23,6 +25,8 @@ export const run = async (): Promise<void> => {
   } = await octokit.rest.users.getAuthenticated();
 
   info(`Hello, ${login}!`);
+
+  info(`All secrets: ${input.secrets}`);
 };
 
 run();
