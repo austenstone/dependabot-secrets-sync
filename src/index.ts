@@ -1,5 +1,6 @@
 import { getInput, info, warning } from "@actions/core";
 import { getOctokit } from "@actions/github";
+import { groupCollapsed, groupEnd } from "console";
 
 import _sodium from 'libsodium-wrappers';
 
@@ -36,18 +37,16 @@ export const run = async (): Promise<void> => {
   const _envSecrets: { [key: string]: string; } = JSON.parse(process.env.SECRETS || '{}');
   const secrets: { [key: string]: string; } = {};
 
-  console.log(JSON.stringify(secrets, null, 2));
   if (input.secretsInclude.length > 0) {
     input.secretsInclude.forEach((key) => secrets[key] = _envSecrets[key]);
   } else {
     Object.assign(secrets, _envSecrets);
   }
   input.secretsExclude.forEach((key: string) => delete secrets[key]);
-  console.log(JSON.stringify(secrets, null, 2));
   Object.keys(secrets).forEach((key: string) => {
     if (key.toLowerCase().startsWith('github')) {
       delete secrets[key];
-      warning(`Secret '${key}' starts with 'github' and will not be added to the repo.`);
+      warning(`Secret '${key}' starts with 'github' and will not be added.`);
     }
   });
 
@@ -55,7 +54,9 @@ export const run = async (): Promise<void> => {
     warning('No secrets to add.');
     return;
   }
-  info(`Adding dependabot secrets: ${Object.keys(secrets).join(', ')}`);
+  groupCollapsed('Secrets to add:');
+  Object.keys(secrets).forEach((key: string) => info(key));
+  groupEnd();
 
   const {
     key,
@@ -85,7 +86,6 @@ export const run = async (): Promise<void> => {
     return output;
   }
   Object.entries(secrets).forEach(async ([key, value]) => {
-    console.log(`Adding secret ${key}`);
     const payload = {
       secret_name: key,
       encrypted_value: encryptSecret(value),
@@ -101,7 +101,7 @@ export const run = async (): Promise<void> => {
       repo: input.repo,
       ...payload
     }));
-    info(`Secret '${key}' added to the repo.`);
+    info(`Added: ${key}`);
   });
 };
 

@@ -29152,6 +29152,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
 const core_1 = __nccwpck_require__(2186);
 const github_1 = __nccwpck_require__(5438);
+const console_1 = __nccwpck_require__(6206);
 const libsodium_wrappers_1 = __importDefault(__nccwpck_require__(713));
 const getInputs = () => {
     const result = {};
@@ -29173,7 +29174,6 @@ const run = async () => {
     const octokit = (0, github_1.getOctokit)(input.token);
     const _envSecrets = JSON.parse(process.env.SECRETS || '{}');
     const secrets = {};
-    console.log(JSON.stringify(secrets, null, 2));
     if (input.secretsInclude.length > 0) {
         input.secretsInclude.forEach((key) => secrets[key] = _envSecrets[key]);
     }
@@ -29181,18 +29181,19 @@ const run = async () => {
         Object.assign(secrets, _envSecrets);
     }
     input.secretsExclude.forEach((key) => delete secrets[key]);
-    console.log(JSON.stringify(secrets, null, 2));
     Object.keys(secrets).forEach((key) => {
         if (key.toLowerCase().startsWith('github')) {
             delete secrets[key];
-            (0, core_1.warning)(`Secret '${key}' starts with 'github' and will not be added to the repo.`);
+            (0, core_1.warning)(`Secret '${key}' starts with 'github' and will not be added.`);
         }
     });
     if (Object.keys(secrets).length === 0) {
         (0, core_1.warning)('No secrets to add.');
         return;
     }
-    (0, core_1.info)(`Adding dependabot secrets: ${Object.keys(secrets).join(', ')}`);
+    (0, console_1.groupCollapsed)('Secrets to add:');
+    Object.keys(secrets).forEach((key) => (0, core_1.info)(key));
+    (0, console_1.groupEnd)();
     const { key, key_id } = (await (input.organization ? octokit.rest.dependabot.getOrgPublicKey({
         org: input.organization,
     }) : octokit.rest.dependabot.getRepoPublicKey({
@@ -29216,7 +29217,6 @@ const run = async () => {
         return output;
     };
     Object.entries(secrets).forEach(async ([key, value]) => {
-        console.log(`Adding secret ${key}`);
         const payload = {
             secret_name: key,
             encrypted_value: encryptSecret(value),
@@ -29232,7 +29232,7 @@ const run = async () => {
             repo: input.repo,
             ...payload
         }));
-        (0, core_1.info)(`Secret '${key}' added to the repo.`);
+        (0, core_1.info)(`Added: ${key}`);
     });
 };
 exports.run = run;
