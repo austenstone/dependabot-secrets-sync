@@ -29173,13 +29173,14 @@ const run = async () => {
     const octokit = (0, github_1.getOctokit)(input.token);
     const _envSecrets = JSON.parse(process.env.SECRETS || '{}');
     const secrets = {};
-    if (input.secretsInclude.length === 0) {
-        Object.assign(secrets, _envSecrets);
-    }
-    else {
+    if (input.secretsInclude.length > 0) {
         input.secretsInclude.forEach((key) => secrets[key] = _envSecrets[key]);
     }
+    else {
+        Object.assign(secrets, _envSecrets);
+    }
     input.secretsExclude.forEach((key) => delete secrets[key]);
+    console.log(JSON.stringify(secrets, null, 2));
     Object.keys(secrets).forEach((key) => {
         if (key.toLowerCase().startsWith('github')) {
             delete secrets[key];

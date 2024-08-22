@@ -33,17 +33,16 @@ const getInputs = (): Input => {
 export const run = async (): Promise<void> => {
   const input = getInputs();
   const octokit = getOctokit(input.token);
-  const _envSecrets = JSON.parse(process.env.SECRETS || '{}');
-  const secrets: {
-    [key: string]: string;
-  } = {};
+  const _envSecrets: { [key: string]: string; } = JSON.parse(process.env.SECRETS || '{}');
+  const secrets: { [key: string]: string; } = {};
 
-  if (input.secretsInclude.length === 0) {
-    Object.assign(secrets, _envSecrets);
-  } else {
+  if (input.secretsInclude.length > 0) {
     input.secretsInclude.forEach((key) => secrets[key] = _envSecrets[key]);
+  } else {
+    Object.assign(secrets, _envSecrets);
   }
   input.secretsExclude.forEach((key: string) => delete secrets[key]);
+  console.log(JSON.stringify(secrets, null, 2));
   Object.keys(secrets).forEach((key: string) => {
     if (key.toLowerCase().startsWith('github')) {
       delete secrets[key];
@@ -67,7 +66,7 @@ export const run = async (): Promise<void> => {
     repo: input.repo,
   }))).data;
 
-  const selectedRepositoryIds = await Promise.all(input.visibilityRepos.map(async (repo: string) => { 
+  const selectedRepositoryIds = await Promise.all(input.visibilityRepos.map(async (repo: string) => {
     const { data } = await octokit.rest.repos.get({
       owner: input.organization,
       repo: repo,
