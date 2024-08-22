@@ -25,7 +25,7 @@ inputs:
     description: 'Optional list of secrets to include in the action payload.'
     required: false
     default: '[]'
-  secrets-excluded:
+  secrets-exclude:
     description: 'Optional list of secrets to exclude from the action payload.'
     required: false
     default: '["GITHUB_TOKEN"]'
