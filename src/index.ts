@@ -41,11 +41,7 @@ export const run = async (): Promise<void> => {
   if (input.secretsInclude.length === 0) {
     Object.assign(secrets, _envSecrets);
   } else {
-    input.secretsInclude.forEach((key: string) => {
-      if (secrets[key] === undefined) {
-        secrets[key] = _envSecrets[key];
-      }
-    });
+    input.secretsInclude.forEach((key) => secrets[key] = _envSecrets[key]);
   }
   input.secretsExclude.forEach((key: string) => delete secrets[key]);
   Object.keys(secrets).forEach((key: string) => {
@@ -55,7 +51,11 @@ export const run = async (): Promise<void> => {
     }
   });
 
-  info(`All secrets: ${JSON.stringify(secrets)}`);
+  if (Object.keys(secrets).length === 0) {
+    warning('No secrets to add.');
+    return;
+  }
+  info(`Adding dependabot secrets: ${Object.keys(secrets).join(', ')}`);
 
   const {
     key,
@@ -67,6 +67,14 @@ export const run = async (): Promise<void> => {
     repo: input.repo,
   }))).data;
 
+  const selectedRepositoryIds = await Promise.all(input.visibilityRepos.map(async (repo: string) => { 
+    const { data } = await octokit.rest.repos.get({
+      owner: input.organization,
+      repo: repo,
+    });
+    return data.id;
+  }));
+
   await _sodium.ready;
   const sodium = _sodium;
   const encryptSecret = (secret: string): string => {
@@ -76,15 +84,6 @@ export const run = async (): Promise<void> => {
     let output = sodium.to_base64(encBytes, sodium.base64_variants.ORIGINAL)
     return output;
   }
-
-  const ids = await Promise.all(input.visibilityRepos.map(async (repo: string) => { 
-    const { data } = await octokit.rest.repos.get({
-      owner: input.organization,
-      repo: repo,
-    });
-    return data.id;
-  }));
-
   Object.entries(secrets).forEach(async ([key, value]) => {
     const payload = {
       secret_name: key,
@@ -95,7 +94,7 @@ export const run = async (): Promise<void> => {
       org: input.organization,
       ...payload,
       visibility: input.visibility,
-      selected_repository_ids: ids.map(id => id.toString()),
+      selected_repository_ids: selectedRepositoryIds.map(id => id.toString()),
     }) : octokit.rest.dependabot.createOrUpdateRepoSecret({
       owner: input.owner,
       repo: input.repo,

@@ -53,7 +53,6 @@ jobs:
         with:
           github-token: ${{ secrets.TOKEN }}
           secrets-exclude: |
-            GITHUB_TOKEN
             SUPER_SECRET
         env:
           SECRETS: ${{ toJson(secrets) }} # IMPORTANT: pass all secrets to the action
@@ -66,7 +65,6 @@ jobs:
           github-token: ${{ secrets.TOKEN }}
           organization: my-org
           secrets-exclude: |
-            GITHUB_TOKEN
             SUPER_SECRET
         env:
           SECRETS: ${{ toJson(secrets) }} # IMPORTANT: pass all secrets to the action
@@ -83,7 +81,6 @@ jobs:
             my-repo
             my-other-repo
           secrets-exclude: |
-            GITHUB_TOKEN
             SUPER_SECRET
         env:
           SECRETS: ${{ toJson(secrets) }} # IMPORTANT: pass all secrets to the action

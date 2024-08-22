@@ -29177,11 +29177,7 @@ const run = async () => {
         Object.assign(secrets, _envSecrets);
     }
     else {
-        input.secretsInclude.forEach((key) => {
-            if (secrets[key] === undefined) {
-                secrets[key] = _envSecrets[key];
-            }
-        });
+        input.secretsInclude.forEach((key) => secrets[key] = _envSecrets[key]);
     }
     input.secretsExclude.forEach((key) => delete secrets[key]);
     Object.keys(secrets).forEach((key) => {
@@ -29190,13 +29186,24 @@ const run = async () => {
             (0, core_1.warning)(`Secret '${key}' starts with 'github' and will not be added to the repo.`);
         }
     });
-    (0, core_1.info)(`All secrets: ${JSON.stringify(secrets)}`);
+    if (Object.keys(secrets).length === 0) {
+        (0, core_1.warning)('No secrets to add.');
+        return;
+    }
+    (0, core_1.info)(`Adding dependabot secrets: ${Object.keys(secrets).join(', ')}`);
     const { key, key_id } = (await (input.organization ? octokit.rest.dependabot.getOrgPublicKey({
         org: input.organization,
     }) : octokit.rest.dependabot.getRepoPublicKey({
         owner: input.owner,
         repo: input.repo,
     }))).data;
+    const selectedRepositoryIds = await Promise.all(input.visibilityRepos.map(async (repo) => {
+        const { data } = await octokit.rest.repos.get({
+            owner: input.organization,
+            repo: repo,
+        });
+        return data.id;
+    }));
     await libsodium_wrappers_1.default.ready;
     const sodium = libsodium_wrappers_1.default;
     const encryptSecret = (secret) => {
@@ -29206,13 +29213,6 @@ const run = async () => {
         let output = sodium.to_base64(encBytes, sodium.base64_variants.ORIGINAL);
         return output;
     };
-    const ids = await Promise.all(input.visibilityRepos.map(async (repo) => {
-        const { data } = await octokit.rest.repos.get({
-            owner: input.organization,
-            repo: repo,
-        });
-        return data.id;
-    }));
     Object.entries(secrets).forEach(async ([key, value]) => {
         const payload = {
             secret_name: key,
@@ -29223,7 +29223,7 @@ const run = async () => {
             org: input.organization,
             ...payload,
             visibility: input.visibility,
-            selected_repository_ids: ids.map(id => id.toString()),
+            selected_repository_ids: selectedRepositoryIds.map(id => id.toString()),
         }) : octokit.rest.dependabot.createOrUpdateRepoSecret({
             owner: input.owner,
             repo: input.repo,
