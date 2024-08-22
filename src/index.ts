@@ -1,4 +1,4 @@
-import { getInput, info } from "@actions/core";
+import { getInput, info, warning } from "@actions/core";
 import { getOctokit } from "@actions/github";
 
 import _sodium from 'libsodium-wrappers';
@@ -42,8 +42,14 @@ export const run = async (): Promise<void> => {
     });
   }
   input.secretsExclude.forEach((key: string) => delete secrets[key]);
+  Object.keys(secrets).forEach((key: string) => {
+    if (key.startsWith('GITHUB_')) {
+      delete secrets[key];
+      warning(`Secret ${key} starts with GITHUB_ and will not be added to the repo.`);
+    }
+  });
 
-  info(`All secrets: ${secrets}`);
+  info(`All secrets: ${JSON.stringify(secrets)}`);
 
   const {
     key,
