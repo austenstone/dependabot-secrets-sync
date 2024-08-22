@@ -84,6 +84,7 @@ export const run = async (): Promise<void> => {
     return output;
   }
   Object.entries(secrets).forEach(async ([key, value]) => {
+    console.log(`Adding secret ${key}`);
     const payload = {
       secret_name: key,
       encrypted_value: encryptSecret(value),
