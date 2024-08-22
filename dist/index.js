@@ -29137,17 +29137,23 @@ const getInputs = () => {
     const result = {};
     result.token = (0, core_1.getInput)("github-token");
     result.secrets = process.env.SECRETS;
-    if (!result.token || result.token === "") {
-        throw new Error("github-token is required");
+    result.owner = (0, core_1.getInput)("owner");
+    result.repo = (0, core_1.getInput)("repo");
+    if (result.repo.includes('/')) {
+        result.repo = result.repo.split('/')[1];
     }
     return result;
 };
 const run = async () => {
     const input = getInputs();
     const octokit = (0, github_1.getOctokit)(input.token);
-    const { data: { login }, } = await octokit.rest.users.getAuthenticated();
-    (0, core_1.info)(`Hello, ${login}!`);
     (0, core_1.info)(`All secrets: ${input.secrets}`);
+    octokit.rest.dependabot.createOrUpdateRepoSecret({
+        owner: input.owner,
+        repo: input.repo,
+        secret_name: "SECRETS",
+        encrypted_value: '123'
+    });
 };
 exports.run = run;
 (0, exports.run)();
