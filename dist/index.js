@@ -29173,6 +29173,7 @@ const run = async () => {
     const octokit = (0, github_1.getOctokit)(input.token);
     const _envSecrets = JSON.parse(process.env.SECRETS || '{}');
     const secrets = {};
+    console.log(JSON.stringify(secrets, null, 2));
     if (input.secretsInclude.length > 0) {
         input.secretsInclude.forEach((key) => secrets[key] = _envSecrets[key]);
     }

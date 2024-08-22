@@ -36,6 +36,7 @@ export const run = async (): Promise<void> => {
   const _envSecrets: { [key: string]: string; } = JSON.parse(process.env.SECRETS || '{}');
   const secrets: { [key: string]: string; } = {};
 
+  console.log(JSON.stringify(secrets, null, 2));
   if (input.secretsInclude.length > 0) {
     input.secretsInclude.forEach((key) => secrets[key] = _envSecrets[key]);
   } else {
