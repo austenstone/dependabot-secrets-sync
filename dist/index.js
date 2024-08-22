@@ -29181,7 +29181,13 @@ const run = async () => {
         });
     }
     input.secretsExclude.forEach((key) => delete secrets[key]);
-    (0, core_1.info)(`All secrets: ${secrets}`);
+    Object.keys(secrets).forEach((key) => {
+        if (key.startsWith('GITHUB_')) {
+            delete secrets[key];
+            (0, core_1.warning)(`Secret ${key} starts with GITHUB_ and will not be added to the repo.`);
+        }
+    });
+    (0, core_1.info)(`All secrets: ${JSON.stringify(secrets)}`);
     const { key, key_id } = (await octokit.rest.dependabot.getRepoPublicKey({
         owner: input.owner,
         repo: input.repo,
