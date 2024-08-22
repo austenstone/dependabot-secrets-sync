@@ -29152,7 +29152,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
 const core_1 = __nccwpck_require__(2186);
 const github_1 = __nccwpck_require__(5438);
-const console_1 = __nccwpck_require__(6206);
 const libsodium_wrappers_1 = __importDefault(__nccwpck_require__(713));
 const getInputs = () => {
     const result = {};
@@ -29191,9 +29190,9 @@ const run = async () => {
         (0, core_1.warning)('No secrets to add.');
         return;
     }
-    (0, console_1.groupCollapsed)('Secrets to add:');
+    (0, core_1.startGroup)('Secrets to add:');
     Object.keys(secrets).forEach((key) => (0, core_1.info)(key));
-    (0, console_1.groupEnd)();
+    (0, core_1.endGroup)();
     const { key, key_id } = (await (input.organization ? octokit.rest.dependabot.getOrgPublicKey({
         org: input.organization,
     }) : octokit.rest.dependabot.getRepoPublicKey({

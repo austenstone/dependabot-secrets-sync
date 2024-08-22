@@ -1,6 +1,5 @@
-import { getInput, info, warning } from "@actions/core";
+import { endGroup, getInput, info, startGroup, warning } from "@actions/core";
 import { getOctokit } from "@actions/github";
-import { groupCollapsed, groupEnd } from "console";
 
 import _sodium from 'libsodium-wrappers';
 
@@ -54,9 +53,9 @@ export const run = async (): Promise<void> => {
     warning('No secrets to add.');
     return;
   }
-  groupCollapsed('Secrets to add:');
+  startGroup('Secrets to add:');
   Object.keys(secrets).forEach((key: string) => info(key));
-  groupEnd();
+  endGroup();
 
   const {
     key,
