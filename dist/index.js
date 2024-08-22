@@ -29190,7 +29190,7 @@ const run = async () => {
         (0, core_1.warning)('No secrets to add.');
         return;
     }
-    (0, core_1.startGroup)('Secrets to add:');
+    (0, core_1.startGroup)('Secrets to add');
     Object.keys(secrets).forEach((key) => (0, core_1.info)(key));
     (0, core_1.endGroup)();
     const { key, key_id } = (await (input.organization ? octokit.rest.dependabot.getOrgPublicKey({

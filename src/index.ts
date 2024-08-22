@@ -53,7 +53,7 @@ export const run = async (): Promise<void> => {
     warning('No secrets to add.');
     return;
   }
-  startGroup('Secrets to add:');
+  startGroup('Secrets to add');
   Object.keys(secrets).forEach((key: string) => info(key));
   endGroup();
 

@@ -87,18 +87,22 @@ jobs:
 ```
 > [!IMPORTANT]  
 > You must pass all secrets to the action via the `SECRETS` environment variable!
-
 ## ➡️ Inputs
 Various inputs are defined in [`action.yml`](action.yml):
 
 | Name | Description | Default |
-| --- | - | - |
+| --- | --- | --- |
 | github-token | The GitHub token used to create an authenticated client | ${{ github.token }} |
-| organization | Optional organization to run the workflow on. | ${{ github.organization }} |
+| organization | Optional organization to run the workflow on. |  |
 | owner | Optional repository owner to run the workflow on. | ${{ github.repository_owner }} |
 | repo | Optional repository name to run the workflow on. | ${{ github.repository }} |
-| secrets-include | Optional list of secrets to include in the action payload. | [] |
-| secrets-excluded | Optional list of secrets to exclude from the action payload. | ["GITHUB_TOKEN"] |
+| secrets-include | Optional list of secrets to include in the action payload. |  |
+| secrets-exclude | Optional list of secrets to exclude from the action payload. |  |
+| visibility | When using organization secrets. all, private, or selected | private |
+| visibility-repos | When using organization secrets. List of repositories to share the secret with. |  |
+
+## Further help
+To get more help on the Actions see [documentation](https://docs.github.com/en/actions).
 
 <!-- 
 ## ⬅️ Outputs
