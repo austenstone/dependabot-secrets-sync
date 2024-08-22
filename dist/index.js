@@ -29223,7 +29223,7 @@ const run = async () => {
             org: input.organization,
             ...payload,
             visibility: input.visibility,
-            selected_repository_ids: ids,
+            selected_repository_ids: ids.map(id => id.toString()),
         }) : octokit.rest.dependabot.createOrUpdateRepoSecret({
             owner: input.owner,
             repo: input.repo,
