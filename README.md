@@ -16,8 +16,16 @@ Add this PAT as a secret so we can use it as input `github-token`, see [Creating
 
 If your organization has SAML enabled you must authorize the PAT, see [Authorizing a personal access token for use with SAML single sign-on](https://docs.github.com/en/enterprise-cloud@latest/authentication/authenticating-with-saml-single-sign-on/authorizing-a-personal-access-token-for-use-with-saml-single-sign-on).
 
+> [!IMPORTANT]  
+> You must pass all secrets to the action via the `SECRETS` environment variable!
+
+```yml
+        env:
+          SECRETS: ${{ toJson(secrets) }} # IMPORTANT: pass all secrets to the action
+```
 
 #### Example
+
 ```yml
 name: Usage
 on:
@@ -37,56 +45,39 @@ jobs:
 
 #### Example Include List
 ```yml
-      - uses: austenstone/dependabot-secrets-sync@main
         with:
-          github-token: ${{ secrets.TOKEN }}
           secrets-include: |
             MY_SECRET
             MY_OTHER_SECRET
-        env:
-          SECRETS: ${{ toJson(secrets) }} # IMPORTANT: pass all secrets to the action
 ```
 
 #### Example Exclude List
 ```yml
-      - uses: austenstone/dependabot-secrets-sync@main
         with:
-          github-token: ${{ secrets.TOKEN }}
           secrets-exclude: |
             SUPER_SECRET
-        env:
-          SECRETS: ${{ toJson(secrets) }} # IMPORTANT: pass all secrets to the action
+            SUPER_OTHER_SECRET
 ```
 
 #### Example Organization
 ```yml
-      - uses: austenstone/dependabot-secrets-sync@main
         with:
           github-token: ${{ secrets.TOKEN }}
           organization: my-org
           secrets-exclude: |
             SUPER_SECRET
-        env:
-          SECRETS: ${{ toJson(secrets) }} # IMPORTANT: pass all secrets to the action
 ```
 
 #### Example Organization select repos
 ```yml
-      - uses: austenstone/dependabot-secrets-sync@main
         with:
-          github-token: ${{ secrets.TOKEN }}
           organization: my-org
           visibility: selected
           visibility-repos: |
             my-repo
             my-other-repo
-          secrets-exclude: |
-            SUPER_SECRET
-        env:
-          SECRETS: ${{ toJson(secrets) }} # IMPORTANT: pass all secrets to the action
 ```
-> [!IMPORTANT]  
-> You must pass all secrets to the action via the `SECRETS` environment variable!
+
 ## ➡️ Inputs
 Various inputs are defined in [`action.yml`](action.yml):
 
