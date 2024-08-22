@@ -2,7 +2,7 @@ name: Dependabot Secrets Sync
 author: Austen Stone
 description: Sync actions secrets to dependabot secrets
 branding:
-  icon: "key"
+  icon: "unlock"
   color: "red"
 
 inputs:
