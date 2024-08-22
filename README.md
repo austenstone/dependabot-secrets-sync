@@ -28,8 +28,7 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: ./
+      - uses: austenstone/dependabot-secrets-sync@main
         with:
           github-token: ${{ secrets.TOKEN }}
         env:
