@@ -7,6 +7,7 @@ interface Input {
   token: string;
   secretsInclude: string[];
   secretsExclude: string[];
+  organization: string;
   owner: string;
   repo: string;
 }
@@ -16,6 +17,7 @@ const getInputs = (): Input => {
   result.token = getInput("github-token");
   result.secretsInclude = JSON.parse(getInput("secrets-include") || '[]');
   result.secretsExclude = JSON.parse(getInput("secrets-exclude") || '[]');
+  result.organization = getInput("organization");
   result.owner = getInput("owner");
   result.repo = getInput("repo");
   if (result.repo.includes('/')) {
@@ -54,10 +56,12 @@ export const run = async (): Promise<void> => {
   const {
     key,
     key_id
-  } = (await octokit.rest.dependabot.getRepoPublicKey({
+  } = (await (input.organization ? octokit.rest.dependabot.getOrgPublicKey({
+    org: input.organization,
+  }) : octokit.rest.dependabot.getRepoPublicKey({
     owner: input.owner,
     repo: input.repo,
-  })).data;
+  }))).data;
 
   await _sodium.ready;
   const sodium = _sodium;
@@ -70,13 +74,20 @@ export const run = async (): Promise<void> => {
   }
 
   Object.entries(secrets).forEach(async ([key, value]) => {
-    await octokit.rest.dependabot.createOrUpdateRepoSecret({
-      owner: input.owner,
-      repo: input.repo,
+    const payload = {
       secret_name: key,
       encrypted_value: encryptSecret(value),
       key_id,
-    });
+    };
+    await (input.organization ? octokit.rest.dependabot.createOrUpdateOrgSecret({
+      org: input.organization,
+      ...payload,
+      visibility: 'all'
+    }) : octokit.rest.dependabot.createOrUpdateRepoSecret({
+      owner: input.owner,
+      repo: input.repo,
+      ...payload
+    }));
     info(`Secret '${key}' added to the repo.`);
   });
 };

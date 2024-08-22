@@ -29158,6 +29158,7 @@ const getInputs = () => {
     result.token = (0, core_1.getInput)("github-token");
     result.secretsInclude = JSON.parse((0, core_1.getInput)("secrets-include") || '[]');
     result.secretsExclude = JSON.parse((0, core_1.getInput)("secrets-exclude") || '[]');
+    result.organization = (0, core_1.getInput)("organization");
     result.owner = (0, core_1.getInput)("owner");
     result.repo = (0, core_1.getInput)("repo");
     if (result.repo.includes('/')) {
@@ -29188,10 +29189,12 @@ const run = async () => {
         }
     });
     (0, core_1.info)(`All secrets: ${JSON.stringify(secrets)}`);
-    const { key, key_id } = (await octokit.rest.dependabot.getRepoPublicKey({
+    const { key, key_id } = (await (input.organization ? octokit.rest.dependabot.getOrgPublicKey({
+        org: input.organization,
+    }) : octokit.rest.dependabot.getRepoPublicKey({
         owner: input.owner,
         repo: input.repo,
-    })).data;
+    }))).data;
     await libsodium_wrappers_1.default.ready;
     const sodium = libsodium_wrappers_1.default;
     const encryptSecret = (secret) => {
@@ -29202,13 +29205,20 @@ const run = async () => {
         return output;
     };
     Object.entries(secrets).forEach(async ([key, value]) => {
-        await octokit.rest.dependabot.createOrUpdateRepoSecret({
-            owner: input.owner,
-            repo: input.repo,
+        const payload = {
             secret_name: key,
             encrypted_value: encryptSecret(value),
             key_id,
-        });
+        };
+        await (input.organization ? octokit.rest.dependabot.createOrUpdateOrgSecret({
+            org: input.organization,
+            ...payload,
+            visibility: 'all'
+        }) : octokit.rest.dependabot.createOrUpdateRepoSecret({
+            owner: input.owner,
+            repo: input.repo,
+            ...payload
+        }));
         (0, core_1.info)(`Secret '${key}' added to the repo.`);
     });
 };

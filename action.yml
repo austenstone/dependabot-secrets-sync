@@ -10,6 +10,9 @@ inputs:
     description: The GitHub token used to create an authenticated client
     default: ${{ github.token }}
     required: false
+  organization:
+    description: 'Optional organization to run the workflow on.'
+    required: false
   owner:
     description: 'Optional repository owner to run the workflow on.'
     default: ${{ github.repository_owner }}
