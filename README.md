@@ -35,6 +35,31 @@ jobs:
           SECRETS: ${{ toJson(secrets) }} # IMPORTANT: pass all secrets to the action
 ```
 
+#### Example Include List
+```yml
+      - uses: austenstone/dependabot-secrets-sync@main
+        with:
+          github-token: ${{ secrets.TOKEN }}
+          secrets-include: |
+            MY_SECRET
+            MY_OTHER_SECRET
+        env:
+          SECRETS: ${{ toJson(secrets) }} # IMPORTANT: pass all secrets to the action
+```
+
+#### Example Exclude List
+
+```yml
+      - uses: austenstone/dependabot-secrets-sync@main
+        with:
+          github-token: ${{ secrets.TOKEN }}
+          secrets-exclude: |
+            GITHUB_TOKEN
+            SUPER_SECRET
+        env:
+          SECRETS: ${{ toJson(secrets) }} # IMPORTANT: pass all secrets to the action
+```
+
 > [!IMPORTANT]  
 > You must pass all secrets to the action via the `SECRETS` environment variable!
 
