@@ -45,7 +45,7 @@ export const run = async (): Promise<void> => {
   Object.keys(secrets).forEach((key: string) => {
     if (key.toLowerCase().startsWith('github')) {
       delete secrets[key];
-      warning(`Secret ${key} starts with GITHUB_ and will not be added to the repo.`);
+      warning(`Secret '${key}' starts with 'github' and will not be added to the repo.`);
     }
   });
 
@@ -77,6 +77,7 @@ export const run = async (): Promise<void> => {
       encrypted_value: encryptSecret(value),
       key_id,
     });
+    info(`Secret '${key}' added to the repo.`);
   });
 };
 
