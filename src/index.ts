@@ -14,8 +14,8 @@ interface Input {
 const getInputs = (): Input => {
   const result = {} as Input;
   result.token = getInput("github-token");
-  result.secretsInclude = JSON.parse(getInput("secrets")) || [];
-  result.secretsExclude = JSON.parse(getInput("secrets-exclude")) || [];
+  result.secretsInclude = JSON.parse(getInput("secrets") || '[]');
+  result.secretsExclude = JSON.parse(getInput("secrets-exclude") || '[]');
   result.owner = getInput("owner");
   result.repo = getInput("repo");
   if (result.repo.includes('/')) {
@@ -31,7 +31,7 @@ export const run = async (): Promise<void> => {
   const secrets: {
     [key: string]: string;
   } = {};
-  
+
   if (input.secretsInclude.length === 0) {
     Object.assign(secrets, _envSecrets);
   } else {
