@@ -1,0 +1,17 @@
+name: Usage
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          organization: octoaustenstone
+          github-token: ${{ secrets.TOKEN }}
+        env:
+          SECRETS: ${{ toJson(secrets) }}
