@@ -17,11 +17,11 @@ interface Input {
 const getInputs = (): Input => {
   const result = {} as Input;
   result.token = getInput("github-token");
-  result.secretsInclude = JSON.parse(getInput("secrets-include") || '[]');
-  result.secretsExclude = JSON.parse(getInput("secrets-exclude") || '[]');
+  result.secretsInclude = getInput("secrets-include").split('\n').filter(x => x !== '');
+  result.secretsExclude = getInput("secrets-exclude").split('\n').filter(x => x !== '');
   result.organization = getInput("organization");
   result.visibility = (getInput("visibility") || 'all') as 'all' | 'private' | 'selected';
-  result.visibilityRepos = JSON.parse(getInput("visibility-repos") || '[]');
+  result.visibilityRepos = getInput("visibility-repos").split('\n').filter(x => x !== '');
   result.owner = getInput("owner");
   result.repo = getInput("repo");
   if (result.repo.includes('/')) {

@@ -29156,11 +29156,11 @@ const libsodium_wrappers_1 = __importDefault(__nccwpck_require__(713));
 const getInputs = () => {
     const result = {};
     result.token = (0, core_1.getInput)("github-token");
-    result.secretsInclude = JSON.parse((0, core_1.getInput)("secrets-include") || '[]');
-    result.secretsExclude = JSON.parse((0, core_1.getInput)("secrets-exclude") || '[]');
+    result.secretsInclude = (0, core_1.getInput)("secrets-include").split('\n').filter(x => x !== '');
+    result.secretsExclude = (0, core_1.getInput)("secrets-exclude").split('\n').filter(x => x !== '');
     result.organization = (0, core_1.getInput)("organization");
     result.visibility = ((0, core_1.getInput)("visibility") || 'all');
-    result.visibilityRepos = JSON.parse((0, core_1.getInput)("visibility-repos") || '[]');
+    result.visibilityRepos = (0, core_1.getInput)("visibility-repos").split('\n').filter(x => x !== '');
     result.owner = (0, core_1.getInput)("owner");
     result.repo = (0, core_1.getInput)("repo");
     if (result.repo.includes('/')) {
