@@ -48,11 +48,23 @@ jobs:
 ```
 
 #### Example Exclude List
-
 ```yml
       - uses: austenstone/dependabot-secrets-sync@main
         with:
           github-token: ${{ secrets.TOKEN }}
+          secrets-exclude: |
+            GITHUB_TOKEN
+            SUPER_SECRET
+        env:
+          SECRETS: ${{ toJson(secrets) }} # IMPORTANT: pass all secrets to the action
+```
+
+#### Example Organization
+```yml
+      - uses: austenstone/dependabot-secrets-sync@main
+        with:
+          github-token: ${{ secrets.TOKEN }}
+          organization: my-org
           secrets-exclude: |
             GITHUB_TOKEN
             SUPER_SECRET
@@ -69,6 +81,7 @@ Various inputs are defined in [`action.yml`](action.yml):
 | Name | Description | Default |
 | --- | - | - |
 | github-token | The GitHub token used to create an authenticated client | ${{ github.token }} |
+| organization | Optional organization to run the workflow on. | ${{ github.organization }} |
 | owner | Optional repository owner to run the workflow on. | ${{ github.repository_owner }} |
 | repo | Optional repository name to run the workflow on. | ${{ github.repository }} |
 | secrets-include | Optional list of secrets to include in the action payload. | [] |
