@@ -8,7 +8,9 @@ Create a workflow (eg: `.github/workflows/dependabot-secrets-sync`). See [Creati
 
 ### PAT(Personal Access Token)
 
-You will need to [create a PAT(Personal Access Token)](https://github.com/settings/tokens/new?description=dependabot-secrets-sync&scopes=repo%2Cadmin%3Aorg) that has `repo` access.
+You will need to create a PAT(Personal Access Token) that has `repo` access.
+
+[click here to create PAT](https://github.com/settings/tokens/new?description=dependabot-secrets-sync&scopes=repo%2Cadmin%3Aorg)
 
 Add this PAT as a secret so we can use it as input `github-token`, see [Creating encrypted secrets for a repository](https://docs.github.com/en/enterprise-cloud@latest/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository).
 
@@ -91,9 +93,6 @@ Various inputs are defined in [`action.yml`](action.yml):
 | secrets-exclude | Optional list of secrets to exclude from the action payload. |  |
 | visibility | When using organization secrets. all, private, or selected | private |
 | visibility-repos | When using organization secrets. List of repositories to share the secret with. |  |
-
-## Further help
-To get more help on the Actions see [documentation](https://docs.github.com/en/actions).
 
 <!-- 
 ## ⬅️ Outputs
