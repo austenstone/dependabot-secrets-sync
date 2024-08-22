@@ -28,10 +28,13 @@ export const run = async (): Promise<void> => {
 
   info(`All secrets: ${input.secrets}`);
 
-  const key = (await octokit.rest.dependabot.getRepoPublicKey({
+  const {
+    key,
+    key_id
+  } = (await octokit.rest.dependabot.getRepoPublicKey({
     owner: input.owner,
     repo: input.repo,
-  })).data.key;
+  })).data;
 
   await _sodium.ready;
   const sodium = _sodium;
@@ -48,6 +51,7 @@ export const run = async (): Promise<void> => {
     repo: input.repo,
     secret_name: "SECRETS",
     encrypted_value: encryptSecret('123'),
+    key_id,
   });
 };
 

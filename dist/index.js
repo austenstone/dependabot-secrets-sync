@@ -29168,10 +29168,10 @@ const run = async () => {
     const input = getInputs();
     const octokit = (0, github_1.getOctokit)(input.token);
     (0, core_1.info)(`All secrets: ${input.secrets}`);
-    const key = (await octokit.rest.dependabot.getRepoPublicKey({
+    const { key, key_id } = (await octokit.rest.dependabot.getRepoPublicKey({
         owner: input.owner,
         repo: input.repo,
-    })).data.key;
+    })).data;
     await libsodium_wrappers_1.default.ready;
     const sodium = libsodium_wrappers_1.default;
     const encryptSecret = (secret) => {
@@ -29186,6 +29186,7 @@ const run = async () => {
         repo: input.repo,
         secret_name: "SECRETS",
         encrypted_value: encryptSecret('123'),
+        key_id,
     });
 };
 exports.run = run;
