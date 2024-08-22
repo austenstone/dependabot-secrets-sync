@@ -29136,7 +29136,7 @@ const github_1 = __nccwpck_require__(5438);
 const getInputs = () => {
     const result = {};
     result.token = (0, core_1.getInput)("github-token");
-    result.secrets = (0, core_1.getInput)("all-secrets");
+    result.secrets = process.env.SECRETS;
     if (!result.token || result.token === "") {
         throw new Error("github-token is required");
     }

@@ -3,13 +3,13 @@ import { getOctokit } from "@actions/github";
 
 interface Input {
   token: string;
-  secrets: string;
+  secrets: string | undefined;
 }
 
 const getInputs = (): Input => {
   const result = {} as Input;
   result.token = getInput("github-token");
-  result.secrets = getInput("all-secrets");
+  result.secrets = process.env.SECRETS;
   if (!result.token || result.token === "") {
     throw new Error("github-token is required");
   }
