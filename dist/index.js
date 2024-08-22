@@ -29182,7 +29182,7 @@ const run = async () => {
     }
     input.secretsExclude.forEach((key) => delete secrets[key]);
     Object.keys(secrets).forEach((key) => {
-        if (key.startsWith('GITHUB_')) {
+        if (key.toLowerCase().startsWith('github')) {
             delete secrets[key];
             (0, core_1.warning)(`Secret ${key} starts with GITHUB_ and will not be added to the repo.`);
         }

@@ -43,7 +43,7 @@ export const run = async (): Promise<void> => {
   }
   input.secretsExclude.forEach((key: string) => delete secrets[key]);
   Object.keys(secrets).forEach((key: string) => {
-    if (key.startsWith('GITHUB_')) {
+    if (key.toLowerCase().startsWith('github')) {
       delete secrets[key];
       warning(`Secret ${key} starts with GITHUB_ and will not be added to the repo.`);
     }
