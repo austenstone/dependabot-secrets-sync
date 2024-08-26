@@ -29156,83 +29156,94 @@ const libsodium_wrappers_1 = __importDefault(__nccwpck_require__(713));
 const getInputs = () => {
     const result = {};
     result.token = (0, core_1.getInput)("github-token");
-    result.secretsInclude = (0, core_1.getInput)("secrets-include").split('\n').filter(x => x !== '');
-    result.secretsExclude = (0, core_1.getInput)("secrets-exclude").split('\n').filter(x => x !== '');
+    result.secretsInclude = (0, core_1.getInput)("secrets-include")
+        .split("\n")
+        .filter((x) => x !== "");
+    result.secretsExclude = (0, core_1.getInput)("secrets-exclude")
+        .split("\n")
+        .filter((x) => x !== "");
     result.organization = (0, core_1.getInput)("organization");
-    result.visibility = ((0, core_1.getInput)("visibility") || 'all');
-    result.visibilityRepos = (0, core_1.getInput)("visibility-repos").split('\n').filter(x => x !== '');
+    result.visibility = ((0, core_1.getInput)("visibility") || "all");
+    result.visibilityRepos = (0, core_1.getInput)("visibility-repos")
+        .split("\n")
+        .filter((x) => x !== "");
     result.owner = (0, core_1.getInput)("owner");
     result.repo = (0, core_1.getInput)("repo");
-    if (result.repo.includes('/')) {
-        result.repo = result.repo.split('/')[1];
+    if (result.repo.includes("/")) {
+        result.repo = result.repo.split("/")[1];
     }
     return result;
 };
 const run = async () => {
     const input = getInputs();
     const octokit = (0, github_1.getOctokit)(input.token);
-    const _envSecrets = JSON.parse(process.env.SECRETS || '{}');
+    const _envSecrets = JSON.parse(process.env.SECRETS || "{}");
     const secrets = {};
-    if (input.secretsInclude.length > 0) {
-        input.secretsInclude.forEach((key) => secrets[key] = _envSecrets[key]);
+    if (input.secretsInclude.length) {
+        for (const key of input.secretsInclude)
+            secrets[key] = _envSecrets[key];
     }
     else {
         Object.assign(secrets, _envSecrets);
     }
-    input.secretsExclude.forEach((key) => delete secrets[key]);
-    Object.keys(secrets).forEach((key) => {
-        if (key.toLowerCase().startsWith('github')) {
+    for (const key of input.secretsExclude)
+        delete secrets[key];
+    for (const key of Object.keys(secrets)) {
+        if (key.toLowerCase().startsWith("github")) {
             delete secrets[key];
-            (0, core_1.warning)(`Secret '${key}' starts with 'github' and will not be added.`);
+            const warningMessage = `Secret '${key}' starts with 'github' and will not be added.`;
+            (0, core_1.warning)(warningMessage);
         }
-    });
-    if (Object.keys(secrets).length === 0) {
-        (0, core_1.warning)('No secrets to add.');
-        return;
     }
-    (0, core_1.startGroup)('Secrets to add');
-    Object.keys(secrets).forEach((key) => (0, core_1.info)(key));
+    if (Object.keys(secrets).length === 0) {
+        return (0, core_1.warning)("No secrets to add.");
+    }
+    (0, core_1.startGroup)("Secrets to add");
+    for (const key of Object.keys(secrets))
+        (0, core_1.info)(key);
     (0, core_1.endGroup)();
-    const { key, key_id } = (await (input.organization ? octokit.rest.dependabot.getOrgPublicKey({
-        org: input.organization,
-    }) : octokit.rest.dependabot.getRepoPublicKey({
-        owner: input.owner,
-        repo: input.repo,
-    }))).data;
+    const { key, key_id } = (await (input.organization
+        ? octokit.rest.dependabot.getOrgPublicKey({
+            org: input.organization,
+        })
+        : octokit.rest.dependabot.getRepoPublicKey({
+            owner: input.owner,
+            repo: input.repo,
+        }))).data;
     const selectedRepositoryIds = await Promise.all(input.visibilityRepos.map(async (repo) => {
         const { data } = await octokit.rest.repos.get({
             owner: input.organization,
-            repo: repo,
+            repo,
         });
         return data.id;
     }));
     await libsodium_wrappers_1.default.ready;
     const sodium = libsodium_wrappers_1.default;
     const encryptSecret = (secret) => {
-        let binkey = sodium.from_base64(key, sodium.base64_variants.ORIGINAL);
-        let binsec = sodium.from_string(secret);
-        let encBytes = sodium.crypto_box_seal(binsec, binkey);
-        let output = sodium.to_base64(encBytes, sodium.base64_variants.ORIGINAL);
+        const binkey = sodium.from_base64(key, sodium.base64_variants.ORIGINAL);
+        const binsec = sodium.from_string(secret);
+        const encBytes = sodium.crypto_box_seal(binsec, binkey);
+        const output = sodium.to_base64(encBytes, sodium.base64_variants.ORIGINAL);
         return output;
     };
-    Object.entries(secrets).forEach(async ([key, value]) => {
+    for (const [secretKey, secretValue] of Object.entries(secrets)) {
         const payload = {
-            secret_name: key,
-            encrypted_value: encryptSecret(value),
+            secret_name: secretKey,
+            encrypted_value: encryptSecret(secretValue),
             key_id,
         };
         await (input.organization ? octokit.rest.dependabot.createOrUpdateOrgSecret({
             org: input.organization,
-            ...payload,
             visibility: input.visibility,
-            selected_repository_ids: selectedRepositoryIds.map(id => id.toString()),
+            selected_repository_ids: selectedRepositoryIds.map((id) => id.toString()),
+            ...payload,
         }) : octokit.rest.dependabot.createOrUpdateRepoSecret({
             owner: input.owner,
             repo: input.repo,
-            ...payload
+            ...payload,
         }));
-        (0, core_1.info)(`Added: ${key}`);
-    });
+        (0, core_1.info)(`Added dependabot secret: ${key}`);
+    }
 };
 exports.run = run;
 (0, exports.run)();
