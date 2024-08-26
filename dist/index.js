@@ -29156,6 +29156,8 @@ const libsodium_wrappers_1 = __importDefault(__nccwpck_require__(713));
 const getInputs = () => {
     const result = {};
     result.token = (0, core_1.getInput)("github-token");
+    result.enableDependabot = (0, core_1.getBooleanInput)("enable-dependabot");
+    result.enableCodespaces = (0, core_1.getBooleanInput)("enable-codespaces");
     result.secretsInclude = (0, core_1.getInput)("secrets-include")
         .split("\n")
         .filter((x) => x !== "");
@@ -29232,17 +29234,32 @@ const run = async () => {
             encrypted_value: encryptSecret(secretValue),
             key_id,
         };
-        await (input.organization ? octokit.rest.dependabot.createOrUpdateOrgSecret({
-            org: input.organization,
-            visibility: input.visibility,
-            selected_repository_ids: selectedRepositoryIds.map((id) => id.toString()),
-            ...payload,
-        }) : octokit.rest.dependabot.createOrUpdateRepoSecret({
-            owner: input.owner,
-            repo: input.repo,
-            ...payload,
-        }));
-        (0, core_1.info)(`Added dependabot secret: ${key}`);
+        if (input.enableDependabot) {
+            await (input.organization ? octokit.rest.dependabot.createOrUpdateOrgSecret({
+                org: input.organization,
+                visibility: input.visibility,
+                selected_repository_ids: selectedRepositoryIds.map((id) => id.toString()),
+                ...payload,
+            }) : octokit.rest.dependabot.createOrUpdateRepoSecret({
+                owner: input.owner,
+                repo: input.repo,
+                ...payload,
+            }));
+            (0, core_1.info)(`Added dependabot secret: ${key}`);
+        }
+        if (input.enableCodespaces) {
+            await (input.organization ? octokit.rest.codespaces.createOrUpdateOrgSecret({
+                org: input.organization,
+                visibility: input.visibility,
+                selected_repository_ids: selectedRepositoryIds.map((id) => id.toString()),
+                ...payload,
+            }) : octokit.rest.codespaces.createOrUpdateRepoSecret({
+                owner: input.owner,
+                repo: input.repo,
+                ...payload,
+            }));
+            (0, core_1.info)(`Added codespaces secret: ${key}`);
+        }
     }
 };
 exports.run = run;

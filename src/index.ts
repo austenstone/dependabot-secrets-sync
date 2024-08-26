@@ -1,10 +1,12 @@
-import { endGroup, getInput, info, startGroup, warning } from "@actions/core";
+import { endGroup, getBooleanInput, getInput, info, startGroup, warning } from "@actions/core";
 import { getOctokit } from "@actions/github";
 
 import _sodium from "libsodium-wrappers";
 
 interface Input {
   token: string;
+  enableDependabot: boolean;
+  enableCodespaces: boolean;
   secretsInclude: string[];
   secretsExclude: string[];
   organization: string;
@@ -17,6 +19,8 @@ interface Input {
 const getInputs = (): Input => {
   const result = {} as Input;
   result.token = getInput("github-token");
+  result.enableDependabot = getBooleanInput("enable-dependabot");
+  result.enableCodespaces = getBooleanInput("enable-codespaces");
   result.secretsInclude = getInput("secrets-include")
     .split("\n")
     .filter((x) => x !== "");
@@ -103,21 +107,42 @@ export const run = async (): Promise<void> => {
       encrypted_value: encryptSecret(secretValue),
       key_id,
     };
-    await (
-      input.organization ? octokit.rest.dependabot.createOrUpdateOrgSecret({
-        org: input.organization,
-        visibility: input.visibility,
-        selected_repository_ids: selectedRepositoryIds.map((id) =>
-          id.toString(),
-        ),
-        ...payload,
-      }) : octokit.rest.dependabot.createOrUpdateRepoSecret({
-        owner: input.owner,
-        repo: input.repo,
-        ...payload,
-      })
-    );
-    info(`Added dependabot secret: ${key}`);
+    if (input.enableDependabot) {
+      await (
+        input.organization ? octokit.rest.dependabot.createOrUpdateOrgSecret({
+          org: input.organization,
+          visibility: input.visibility,
+          selected_repository_ids: selectedRepositoryIds.map((id) =>
+            id.toString(),
+          ),
+          ...payload,
+        }) : octokit.rest.dependabot.createOrUpdateRepoSecret({
+          owner: input.owner,
+          repo: input.repo,
+          ...payload,
+        })
+      );
+      info(`Added dependabot secret: ${key}`);
+    }
+
+    if (input.enableCodespaces) {
+      await (
+        input.organization ? octokit.rest.codespaces.createOrUpdateOrgSecret({
+          org: input.organization,
+          visibility: input.visibility,
+          selected_repository_ids: selectedRepositoryIds.map((id) =>
+            id.toString(),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ) as any,
+          ...payload,
+        }) : octokit.rest.codespaces.createOrUpdateRepoSecret({
+          owner: input.owner,
+          repo: input.repo,
+          ...payload,
+        })
+      );
+      info(`Added codespaces secret: ${key}`);
+    }
   }
 };
 
